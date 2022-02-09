@@ -1,0 +1,6 @@
+node_modules/
+config/MysqlDB.js
+config/oracleDB.js
+.env
+/routers
+/controllers
