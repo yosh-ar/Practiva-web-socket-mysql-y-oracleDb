@@ -1,13 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
-const oracledb = require('oracledb');
-
-
-const dbOracle = require('../config/oracleDB');
 const dbMysql = require('../config/MysqlDB');
 
-const {socketController} = require('../sockets/controller');
+const {getAsistencia} = require('../sockets/controller');
 
 class server {
 
@@ -16,20 +12,13 @@ class server {
         this.libPath = 'C:\\instantclient_12_1';
         this.app    = express();
         this.port   = process.env.PORT;
-        this.server = require('http').createServer( this.app );
-        this.io     = require('socket.io')( this.server );
         
-        // this.paths = {
-        //     asistencia : '/api/asistencias'
-        // }
         // Middlewares
         this.middlewares();
 
-        // Rutas de mi aplicación
-        // this.routes();
 
-        // Sockets
-        this.sockets();
+        // recursividad
+        this.recursividad();
 
         //conexion mysql
         this.conexionMysql();
@@ -41,9 +30,6 @@ class server {
         this.app.use( express.static('public') );
     }
     
-    // routes() {
-    //     this.app.use( this.paths.asistencia, require('../routers/asistencia.routes'));
-    // }
     async conexionMysql(){
         try {
             await dbMysql.sync();
@@ -53,16 +39,11 @@ class server {
           }
     }
  
-    sockets() {
-        socketController();
-        // console.log('esta entrando a la funcion')
-        this.io.on('connection', socketController );
-        // this.io.on('connection', ()=>{
-        //     console.log('esta llamando al socket')
-        // });
+    recursividad() {
+        getAsistencia()
     }
     listen() {
-        this.server.listen( this.port, () => {
+        this.app.listen( this.port, () => {
             console.log('Servidor corriendo en puerto', this.port );
         });
     }
