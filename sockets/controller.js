@@ -3,6 +3,7 @@ const {Asistencia} = require('../models')
 const fs = require('fs');
 const oracledb = require('oracledb');
 const dbOracle = require('../config/oracleDB');
+const dbOracleProd = require('../config/oracleDBProd');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 const moment = require('moment');
@@ -13,6 +14,7 @@ let POLLING_INTERVAL = 60000;
 let pollingTimer;
 
 let conexion;
+let conexion_prod;
 
 const libPath='C:\\instantclient_12_1';
 
@@ -26,6 +28,7 @@ const conectaOracle = async(connection) => {
       oracledb.initOracleClient({ libDir: libPath });
       try {
           conexion = await oracledb.getConnection(dbOracle);
+          conexion_prod = await oracledb.getConnection(dbOracleProd);
           console.log('Oracle conectado correctamente')
       } catch (err) {
           console.error(err.message);
@@ -64,7 +67,7 @@ const getAsistencia = async()=>{
                     const codpla =  asistencia1[j].no_tarjeta.substring(2,4); 
                     const no_emple = Number(asistencia1[j].no_tarjeta.substring(9));
                     
-                    const empleado =  await conexion.execute(`SELECT a.nombre, a.no_cia, b.jornada, a.no_emple, a.codpla , a.no_hora,
+                    const empleado =  await conexion_prod.execute(`SELECT a.nombre, a.no_cia, b.jornada, a.no_emple, a.codpla , a.no_hora,
                         b.entra_l lunes, b.entra_m martes, b.entra_k miercoles, b.entra_j jueves, b.entra_v viernes, b.entra_s sabado, b.entra_d domingo,
                         b.sale_l lunes_sale, b.sale_m martes_sale, b.sale_k miercoles_sale, b.sale_j jueves_sale, b.sale_v viernes_sale, b.sale_s sabado_sale, b.sale_d domingo_sale
                         FROM arplme a INNER JOIN ARPLTH b
@@ -153,6 +156,7 @@ const Hora= (dia_actual, E_S)=>{
     return resp;
 }
 
+// conectaOracleProd();
 conectaOracle();
 module.exports = {
     getAsistencia
