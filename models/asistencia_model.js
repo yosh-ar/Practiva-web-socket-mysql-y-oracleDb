@@ -50,6 +50,10 @@ const Asistencia = db.define('asistencia', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     },
+    repit: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
 
 });
 
