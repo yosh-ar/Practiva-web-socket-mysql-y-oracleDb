@@ -45,6 +45,7 @@ const getAsistencia = async()=>{
         let ruta;
             pollingTimer = setTimeout(getAsistencia, POLLING_INTERVAL);
             let cambio_jornada = false;
+            let e_s = '';
             if(asistencia.length >0){
                 for(let i = 0; i<asistencia.length-1; i++){
                     const posicion_siguiente = i+1;
@@ -90,23 +91,25 @@ const getAsistencia = async()=>{
                     await conexion_prod.close();
                     // console.log(empleado);
                     if(empleado.rows.length>0){
+                        const hora_string = asistencia1[j].hora_aut.toString();
+                        const hora_number = Number(hora_string.substring(0,2));
+                        const hora_entrada = hora_number * 3600;
+
+                        const dia_actual = new Date(customFormatter(asistencia1[j].fecha_aut)).getDay()+1;
+                        
+                        const dia = Hora(dia_actual, 1);
+                        const dia1 =Hora(dia_actual,2);
+                                    
+                        const entrada_laboral = empleado.rows[0][dia];
+                        const salida_laboral = empleado.rows[0][dia1];
+
                         if(empleado.rows[0][2] === '1'){
-                            const hora_string = asistencia1[j].hora_aut.toString();
-                            const hora_number = Number(hora_string.substring(0,2));
-                            const hora_entrada = hora_number * 3600;
-
-                            const dia_actual = new Date(customFormatter(asistencia1[j].fecha_aut)).getDay()+1;
-                            
-                            const dia = Hora(dia_actual, 1);
-                            const dia1 =Hora(dia_actual,2);
-                                        
-                            const entrada_laboral = empleado.rows[0][dia];
-                            const salida_laboral = empleado.rows[0][dia1];
-
                             ruta = EntradaSalida(hora_entrada,entrada_laboral, salida_laboral);
                             cambio_jornada =  (ruta == 'SALIDA') ? true :false;
 
                         }else{
+                            ruta = EntradaSalida(hora_entrada,entrada_laboral, salida_laboral);
+                            e_s =  (ruta == 'SALIDA') ? 'S' : (ruta == 'ENTRADA') ? 'E' : 'O';
                             cambio_jornada = false;
                         } 
                     }else{
@@ -124,7 +127,7 @@ const getAsistencia = async()=>{
                     await conexion.execute("INSERT INTO "+'planilla.arplmarcas'+" VALUES "+
                     "(:NUMERO, :NO_EMPLE, TO_DATE(:FECHA_HORA_AUT,'RRRR/MM/DD hh24:mi:ss'), TO_DATE(:FECHA_AUT,'RRRR/MM/DD'), :HORA_AUT, :DIRECCION, :ENTRADA, :SERIE, :NOMBRE, :NO_TARJETA, :INGRESO, :SALIDA, :USUARIO, :FECHA_CREACION, :ESTADO, TO_DATE(:JORNADA,'RRRR/MM/DD'))",
                     [asistencia1[j].id,  asistencia1[j].no_emple,fecha_hora, 
-                    asistencia1[j].fecha_aut,asistencia1[j].hora_aut, asistencia1[j].direccion, asistencia1[j].entrada, asistencia1[j].serie
+                    asistencia1[j].fecha_aut,asistencia1[j].hora_aut, e_s, asistencia1[j].entrada, asistencia1[j].serie
                     ,asistencia1[j].nombre, asistencia1[j].no_tarjeta, asistencia1[j].ingreso, asistencia1[j].salida, user, fecha_db, '1',jornada_actual ],{ autoCommit: true }); 
                     await Asistencia.update({estado: false},{where : {id : asistencia1[j].id}});
                     await conexion.close();
