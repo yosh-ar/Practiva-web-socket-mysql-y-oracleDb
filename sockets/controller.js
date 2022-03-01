@@ -109,6 +109,7 @@ const getAsistencia = async()=>{
 
                         }else{
                             ruta = EntradaSalida(hora_entrada,entrada_laboral, salida_laboral);
+                            console.log(hora_entrada,entrada_laboral, salida_laboral)
                             e_s =  (ruta == 'SALIDA') ? 'S' : (ruta == 'ENTRADA') ? 'E' : 'O';
                             cambio_jornada = false;
                         } 
