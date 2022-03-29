@@ -57,7 +57,6 @@ const getAsistencia = async()=>{
                     where: {estado : true, repit: true},
                     order : [['id', 'ASC']]
                   });
-                  
                   conexion = await oracledb.getConnection('qa');
                   const usuario = await conexion.execute("select user from dual",{}, { outFormat: oracledb.OBJECT }); 
                   const fecha_registro = await conexion.execute("select sysdate from dual");
@@ -92,9 +91,13 @@ const getAsistencia = async()=>{
                     // console.log(empleado);
                     if(empleado.rows.length>0){
                         const hora_string = asistencia1[j].hora_aut.toString();
+                        // console.log(hora_string);
                         const hora_number = Number(hora_string.substring(0,2));
-                        const hora_entrada = hora_number * 3600;
-
+                        const minutos_number = Number(hora_string.substring(3,5));
+                        const hora_real = hora_number.toString() + '.' + minutos_number.toString();
+                        
+                        const hora_entrada = parseFloat(hora_real) * 3600;
+                        
                         const dia_actual = new Date(customFormatter(asistencia1[j].fecha_aut)).getDay()+1;
                         
                         const dia = Hora(dia_actual, 1);
@@ -102,21 +105,22 @@ const getAsistencia = async()=>{
                                     
                         const entrada_laboral = empleado.rows[0][dia];
                         const salida_laboral = empleado.rows[0][dia1];
+                        // console.log(entrada_laboral);
 
                         if(empleado.rows[0][2] === '1'){
                             ruta = EntradaSalida(hora_entrada,entrada_laboral, salida_laboral);
                             cambio_jornada =  (ruta == 'SALIDA') ? true :false;
-
+                            
                         }else{
                             ruta = EntradaSalida(hora_entrada,entrada_laboral, salida_laboral);
-                            console.log(hora_entrada,entrada_laboral, salida_laboral)
+                            // console.log(hora_entrada,entrada_laboral, salida_laboral)
                             e_s =  (ruta == 'SALIDA') ? 'S' : (ruta == 'ENTRADA') ? 'E' : 'O';
                             cambio_jornada = false;
                         } 
                     }else{
                         cambio_jornada = false;
                     }
-                      
+                    // console.log(e_s);
                     jornada = new Date(fecha_hora);
                     jornada.setDate(jornada.getDate() -1);
                     
@@ -143,11 +147,18 @@ const getAsistencia = async()=>{
 }
 
 const EntradaSalida = (horario_lectura, labora_entra, labora_salida)=>{
-    const entra_despues = labora_entra + 1800;
-    const entra_antes = labora_entra - 1800;
+    const entrada_mas30mins = parseFloat(labora_entra/3600).toString() + '.' +'31';
+    const entrada_menos30mins = parseFloat(labora_entra-3600)/3600 + '.' +'31';
+    const entra_despues = parseFloat(entrada_mas30mins)*3600;
+    const entra_antes = parseFloat(entrada_menos30mins)*3600;
+    
+    // console.log(entra_antes/3600, entra_despues/3600, horario_lectura/3600, labora_entra/3600);
 
-    const sale_despues = labora_salida + 1800;
-    const sale_antes = labora_salida + 1800;
+    const salida_mas30mins = parseFloat(labora_salida/3600).toString() + '.' +'31';
+    const salida_menos30mins = parseFloat(labora_salida-3600)/3600 + '.' +'31';
+
+    const sale_despues = parseFloat(salida_mas30mins)*3600;
+    const sale_antes = parseFloat(salida_menos30mins)*3600;
    
     if((horario_lectura == labora_entra ) || (horario_lectura <= entra_despues && horario_lectura >= entra_antes)){
         return 'ENTRADA';
