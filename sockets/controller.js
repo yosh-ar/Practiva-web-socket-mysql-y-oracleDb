@@ -127,13 +127,14 @@ const getAsistencia = async()=>{
                     
                     const jornada_actual = (cambio_jornada == true) ?customFormatter(jornada):customFormatter(asistencia1[j].fecha_aut);
 
-                    console.log(jornada_actual,  jornada);
+                    // console.log(jornada_actual,  jornada);
                     conexion = await oracledb.getConnection('qa');
                     await conexion.execute("INSERT INTO "+'planilla.arplmarcas'+" VALUES "+
-                    "(:NUMERO, :NO_EMPLE, TO_DATE(:FECHA_HORA_AUT,'RRRR/MM/DD hh24:mi:ss'), TO_DATE(:FECHA_AUT,'RRRR/MM/DD'), :HORA_AUT, :DIRECCION, :ENTRADA, :SERIE, :NOMBRE, :NO_TARJETA, :INGRESO, :SALIDA, :USUARIO, :FECHA_CREACION, :ESTADO, TO_DATE(:JORNADA,'RRRR/MM/DD'))",
+                    "(:NUMERO, :NO_EMPLE, TO_DATE(:FECHA_HORA_AUT,'RRRR/MM/DD hh24:mi:ss'), TO_DATE(:FECHA_AUT,'RRRR/MM/DD'), :HORA_AUT, :DIRECCION, :ENTRADA, :SERIE, :NOMBRE, :NO_TARJETA, :INGRESO, :SALIDA, :USUARIO, :FECHA_CREACION, :ESTADO, TO_DATE(:JORNADA,'RRRR/MM/DD'), :NO_EMPLE_ID)",
                     [asistencia1[j].id,  asistencia1[j].no_emple,fecha_hora, 
                     asistencia1[j].fecha_aut,asistencia1[j].hora_aut, e_s, asistencia1[j].entrada, asistencia1[j].serie
-                    ,asistencia1[j].nombre, asistencia1[j].no_tarjeta, asistencia1[j].ingreso, asistencia1[j].salida, user, fecha_db, '1',jornada_actual ],{ autoCommit: true }); 
+                    ,asistencia1[j].nombre, asistencia1[j].no_tarjeta, asistencia1[j].ingreso, asistencia1[j].salida, user, fecha_db, '1',jornada_actual,
+                    no_emple ],{ autoCommit: true }); 
                     await Asistencia.update({estado: false},{where : {id : asistencia1[j].id}});
                     await conexion.close();
 
