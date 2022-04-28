@@ -94,7 +94,19 @@ const getAsistencia = async()=>{
                         // console.log(hora_string);
                         const hora_number = Number(hora_string.substring(0,2));
                         const minutos_number = Number(hora_string.substring(3,5));
-                        const hora_real = hora_number.toString() + '.' + minutos_number.toString();
+
+                        const minutos_reales = (minutos_number == 1) ? 00 : 
+                                                (minutos_number == 2) ? 00 : 
+                                                (minutos_number == 3) ? 00 : 
+                                                (minutos_number == 4) ? 00 : 
+                                                (minutos_number == 5) ? 00 : 
+                                                (minutos_number == 6) ? 00 :
+                                                (minutos_number == 7) ? 00 : 
+                                                (minutos_number == 8) ? 00 :
+                                                (minutos_number == 9) ? 00 : 
+                                                minutos_number
+
+                        const hora_real = hora_number.toString() + '.' + minutos_reales.toString();
                         
                         const hora_entrada = parseFloat(hora_real) * 3600;
                         
@@ -110,7 +122,7 @@ const getAsistencia = async()=>{
                         if(empleado.rows[0][2] === '1'){
                             ruta = EntradaSalida(hora_entrada,entrada_laboral, salida_laboral);
                             cambio_jornada =  (ruta == 'SALIDA') ? true :false;
-                            
+                            e_s =  (ruta == 'SALIDA') ? 'S' : (ruta == 'ENTRADA') ? 'E' : 'O';
                         }else{
                             ruta = EntradaSalida(hora_entrada,entrada_laboral, salida_laboral);
                             // console.log(hora_entrada,entrada_laboral, salida_laboral)
@@ -128,7 +140,7 @@ const getAsistencia = async()=>{
                     const jornada_actual = (cambio_jornada == true) ?customFormatter(jornada):customFormatter(asistencia1[j].fecha_aut);
 
                     // console.log(jornada_actual,  jornada);
-                    conexion = await oracledb.getConnection('qa');
+                    conexion = await oracledb.getConnection('prod');
                     await conexion.execute("INSERT INTO "+'planilla.arplmarcas'+" VALUES "+
                     "(:NUMERO, :NO_EMPLE, TO_DATE(:FECHA_HORA_AUT,'RRRR/MM/DD hh24:mi:ss'), TO_DATE(:FECHA_AUT,'RRRR/MM/DD'), :HORA_AUT, :DIRECCION, :ENTRADA, :SERIE, :NOMBRE, :NO_TARJETA, :INGRESO, :SALIDA, :USUARIO, :FECHA_CREACION, :ESTADO, TO_DATE(:JORNADA,'RRRR/MM/DD'), :NO_EMPLE_ID)",
                     [asistencia1[j].id,  asistencia1[j].no_emple,fecha_hora, 
